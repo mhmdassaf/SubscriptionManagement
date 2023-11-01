@@ -1,25 +1,45 @@
-var builder = WebApplication.CreateBuilder(args);
+var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
+logger.Info("init main");
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+try
 {
-	app.UseSwagger();
-	app.UseSwaggerUI();
+	var builder = WebApplication.CreateBuilder(args);
+
+	#region Add services to the container.
+	builder.Services.AddControllers();
+	builder.Services.AddHttpContextAccessor();
+	builder.Services.AddEndpointsApiExplorer();
+	builder.Services.AddApplicationServices();
+	builder.Services.AddSwaggerGen();
+	builder.Services.AddAuth();
+	builder.Services.AddDatabase<SubscriptionManagementDbContext>(builder.Configuration);
+	builder.Services.AddGenericRepository<SubscriptionManagementDbContext>();
+	builder.Services.AddMapper();
+	#endregion
+
+	var app = builder.UseNLog().Build();
+
+	#region Configure the HTTP request pipeline.
+	app.UseSwaggerInternal();
+	app.UseHttpsRedirection();
+	app.UseAuthentication();
+	app.UseAuthorization();
+	app.MapControllers();
+	app.UseGlobalExceptionHandler();
+	//app.ApplyMigration<SubscriptionManagementDbContext>();
+	#endregion
+
+	app.Run();
+}
+catch (Exception exception)
+{
+	// NLog: catch setup errors
+	logger.Error(exception, "Stopped program because of exception");
+	throw;
+}
+finally
+{
+	// Ensure to flush and stop internal timers/threads before application-exit (Avoid segmentation fault on Linux)
+	LogManager.Shutdown();
 }
 
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
