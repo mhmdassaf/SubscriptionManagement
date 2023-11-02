@@ -9,8 +9,8 @@ try
 	builder.Services.AddControllers();
 	builder.Services.AddHttpContextAccessor();
 	builder.Services.AddEndpointsApiExplorer();
-	builder.Services.AddApplicationServices();
-	builder.Services.AddSwaggerGen();
+	builder.Services.AddApplicationServices(builder.Configuration);
+	builder.Services.AddSwagger();
 	builder.Services.AddAuth();
 	builder.Services.AddDatabase<SubscriptionManagementDbContext>(builder.Configuration);
 	builder.Services.AddGenericRepository<SubscriptionManagementDbContext>();

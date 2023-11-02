@@ -1,18 +1,74 @@
-﻿using ManageProducts.BAL.Services;
+﻿using Microsoft.OpenApi.Models;
 
 namespace SubscriptionManagement.API.Extensions;
 
 public static class ServiceCollectionExtension
 {
-	public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+	public static IServiceCollection AddApplicationServices(this IServiceCollection services, ConfigurationManager configuration)
 	{
-		services.AddScoped<ICategoryService, CategoryService>();
+		services.Configure<AuthSettings>(configuration.GetSection(nameof(AuthSettings)));
+		services.AddScoped<IAuthService, AuthService>();
+		return services;
+	}
+
+	public static IServiceCollection AddSwagger(this IServiceCollection services)
+	{
+		services.AddSwaggerGen(c =>
+		{
+			c.SwaggerDoc("v1", new OpenApiInfo { Title = "SubscriptionManagement API", Version = "v1" });
+
+			// Define the security requirements
+			c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+			{
+				In = ParameterLocation.Header,
+				Description = "Please enter token",
+				Name = "Authorization",
+				Type = SecuritySchemeType.Http,
+				BearerFormat = "JWT",
+				Scheme = "bearer"
+			});
+			c.AddSecurityRequirement(new OpenApiSecurityRequirement
+			{
+				{
+					new OpenApiSecurityScheme
+					{
+						Reference = new OpenApiReference
+						{
+							Type = ReferenceType.SecurityScheme,
+							Id = "Bearer"
+						}
+					},
+					new string[] { }
+				}
+			});
+		});
 		return services;
 	}
 
 	public static IServiceCollection AddAuth(this IServiceCollection services)
 	{
-		services.AddAuthentication();
+		var authSettings = services.BuildServiceProvider().GetService<IOptions<AuthSettings>>();
+		if (authSettings == null || authSettings.Value == null) 
+		{ 
+			throw new ArgumentNullException(nameof(authSettings)); 
+		}
+
+		services.AddAuthentication(options =>
+		{
+			options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+			options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+		}).AddJwtBearer(options =>
+		{
+			options.RequireHttpsMetadata = authSettings.Value.RequireHttpsMetadata; 
+			options.SaveToken = true;
+			options.TokenValidationParameters = new TokenValidationParameters
+			{
+				ValidateIssuerSigningKey = true,
+				IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(authSettings.Value.SecretKey)),
+				ValidateIssuer = authSettings.Value.ValidateIssuer,
+				ValidateAudience = authSettings.Value.ValidateAudience,
+			};
+		});
 		return services;
 	}
 
