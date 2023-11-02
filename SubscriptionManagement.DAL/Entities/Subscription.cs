@@ -2,7 +2,7 @@
 
 public class Subscription : BaseEntity<Guid>
 {
-	public string UserId { get; set; }
+	public string UserId { get; set; } = null!;
 
 	[ForeignKey(nameof(UserId))]
 	public User User { get; set; } = null!;

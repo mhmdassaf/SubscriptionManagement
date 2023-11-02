@@ -1,6 +1,4 @@
-﻿using Microsoft.OpenApi.Models;
-
-namespace SubscriptionManagement.API.Extensions;
+﻿namespace SubscriptionManagement.API.Extensions;
 
 public static class ServiceCollectionExtension
 {
@@ -8,6 +6,7 @@ public static class ServiceCollectionExtension
 	{
 		services.Configure<AuthSettings>(configuration.GetSection(nameof(AuthSettings)));
 		services.AddScoped<IAuthService, AuthService>();
+		services.AddScoped<ISubscriptionService, SubscriptionService>();
 		return services;
 	}
 
@@ -79,6 +78,22 @@ public static class ServiceCollectionExtension
 		{
 			config.UseNpgsql(configuration.GetConnectionString(nameof(ConnectionStrings.SubscriptionManagementConnection)));
 		});
+
+		return services;
+	}
+
+	public static IServiceCollection AddIdentity(this IServiceCollection services)
+	{
+		services.AddIdentity<User, IdentityRole>(config =>
+		{
+			config.Password.RequiredLength = 4;
+			config.Password.RequireNonAlphanumeric = false;
+			config.Password.RequireUppercase = false;
+			config.Password.RequireDigit = false;
+			config.SignIn.RequireConfirmedEmail = true;
+		})
+				.AddEntityFrameworkStores<SubscriptionManagementDbContext>()
+				.AddDefaultTokenProviders();
 
 		return services;
 	}

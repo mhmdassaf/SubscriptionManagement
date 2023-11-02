@@ -13,7 +13,7 @@ public class SubscriptionManagementDbContext : IdentityDbContext<User>
 
 	protected override void OnModelCreating(ModelBuilder builder)
 	{
-		builder.SeedUsers();
+		builder.SeedSubscriptions();
 		base.OnModelCreating(builder);
 	}
 

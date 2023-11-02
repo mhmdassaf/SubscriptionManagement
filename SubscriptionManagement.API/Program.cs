@@ -14,6 +14,7 @@ try
 	builder.Services.AddAuth();
 	builder.Services.AddDatabase<SubscriptionManagementDbContext>(builder.Configuration);
 	builder.Services.AddGenericRepository<SubscriptionManagementDbContext>();
+	builder.Services.AddIdentity();
 	builder.Services.AddMapper();
 	#endregion
 
@@ -26,7 +27,7 @@ try
 	app.UseAuthorization();
 	app.MapControllers();
 	app.UseGlobalExceptionHandler();
-	//app.ApplyMigration<SubscriptionManagementDbContext>();
+	app.ApplyMigration<SubscriptionManagementDbContext>();
 	#endregion
 
 	app.Run();
