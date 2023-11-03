@@ -33,7 +33,7 @@ public class SubscriptionService : BaseService, ISubscriptionService
 		
 		if(subscriptions == null || !subscriptions.Any())
 		{
-			ResponseModel.Code = HttpStatusCode.NotFound;
+			ResponseModel.Code = HttpStatusCode.BadRequest;
 			ResponseModel.Errors.Add(new ErrorModel
 			{
 				Code = Validation.Subscription.NoActiveSubscriptionFoundCode,
@@ -62,7 +62,7 @@ public class SubscriptionService : BaseService, ISubscriptionService
 
 		if (subscriptions == null || !subscriptions.Any())
 		{
-			ResponseModel.Code = HttpStatusCode.NotFound;
+			ResponseModel.Code = HttpStatusCode.BadRequest;
 			ResponseModel.Errors.Add(new ErrorModel
 			{
 				Code = Validation.Subscription.NoSubscriptionFoundCode,

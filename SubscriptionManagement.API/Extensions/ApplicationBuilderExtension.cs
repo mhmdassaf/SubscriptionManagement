@@ -7,10 +7,8 @@ public static class ApplicationBuilderExtension
 		if (app.Environment.IsDevelopment())
 		{
 			app.UseSwagger();
-			app.UseSwaggerUI(c =>
-			{
-				c.SwaggerEndpoint("/swagger/v1/swagger.json", "SubscriptionManagement API V1");
-				c.RoutePrefix = "swagger";
+			app.UseSwaggerUI(options => {
+				options.SwaggerEndpoint("/swagger/V1/swagger.json", "SubscriptionManagement API V1");
 			});
 		}
 		return app;

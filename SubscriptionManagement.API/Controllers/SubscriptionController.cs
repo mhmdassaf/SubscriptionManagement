@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace SubscriptionManagement.API.Controllers;
+﻿namespace SubscriptionManagement.API.Controllers;
 
 [Authorize]
 public class SubscriptionController : BaseController

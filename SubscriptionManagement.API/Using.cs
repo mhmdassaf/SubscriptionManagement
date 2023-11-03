@@ -22,8 +22,10 @@ global using SubscriptionManagement.Common.Dtos.Subscription;
 global using SubscriptionManagement.Common.Models;
 global using SubscriptionManagement.DAL.DataContext;
 global using SubscriptionManagement.DAL.Entities;
+global using System.ComponentModel.DataAnnotations;
 global using System.Net;
 global using System.Text;
+
 
 
 

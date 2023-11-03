@@ -7,18 +7,18 @@ try
 
 	#region Add services to the container.
 	builder.Services.AddControllers();
-	builder.Services.AddHttpContextAccessor();
-	builder.Services.AddEndpointsApiExplorer();
 	builder.Services.AddApplicationServices(builder.Configuration);
-	builder.Services.AddSwagger();
-	builder.Services.AddAuth();
 	builder.Services.AddDatabase<SubscriptionManagementDbContext>(builder.Configuration);
 	builder.Services.AddGenericRepository<SubscriptionManagementDbContext>();
-	builder.Services.AddIdentity();
+	builder.Services.AddIdentityInternal();
+	builder.Services.AddAuth();
+	builder.Services.AddHttpContextAccessor();
+	builder.Services.AddEndpointsApiExplorer();
+	builder.Services.AddSwagger();
 	builder.Services.AddMapper();
 	#endregion
 
-	var app = builder.UseNLog().Build();
+	var app = builder.Build();
 
 	#region Configure the HTTP request pipeline.
 	app.UseSwaggerInternal();
@@ -26,6 +26,7 @@ try
 	app.UseAuthentication();
 	app.UseAuthorization();
 	app.MapControllers();
+	app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 	app.UseGlobalExceptionHandler();
 	app.ApplyMigration<SubscriptionManagementDbContext>();
 	#endregion

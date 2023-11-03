@@ -12,34 +12,31 @@ public static class ServiceCollectionExtension
 
 	public static IServiceCollection AddSwagger(this IServiceCollection services)
 	{
-		services.AddSwaggerGen(c =>
-		{
-			c.SwaggerDoc("v1", new OpenApiInfo { Title = "SubscriptionManagement API", Version = "v1" });
-
-			// Define the security requirements
-			c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+		services.AddSwaggerGen(options => {
+			options.SwaggerDoc("V1", new OpenApiInfo
 			{
-				In = ParameterLocation.Header,
-				Description = "Please enter token",
-				Name = "Authorization",
-				Type = SecuritySchemeType.Http,
+				Version = "V1",
+				Title = "SubscriptionManagement API"
+			});
+			options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+			{
+				Scheme = "Bearer",
 				BearerFormat = "JWT",
-				Scheme = "bearer"
+				In = ParameterLocation.Header,
+				Name = "Authorization",
+				Description = "Bearer Authentication with JWT Token",
+				Type = SecuritySchemeType.Http
 			});
-			c.AddSecurityRequirement(new OpenApiSecurityRequirement
+			options.AddSecurityRequirement(new OpenApiSecurityRequirement {
 			{
-				{
-					new OpenApiSecurityScheme
-					{
-						Reference = new OpenApiReference
-						{
-							Type = ReferenceType.SecurityScheme,
-							Id = "Bearer"
-						}
-					},
-					new string[] { }
-				}
-			});
+				new OpenApiSecurityScheme {
+					Reference = new OpenApiReference {
+						Id = "Bearer",
+						Type = ReferenceType.SecurityScheme
+					}
+				},
+				new List < string > ()
+		    }});
 		});
 		return services;
 	}
@@ -52,20 +49,19 @@ public static class ServiceCollectionExtension
 			throw new ArgumentNullException(nameof(authSettings)); 
 		}
 
-		services.AddAuthentication(options =>
-		{
-			options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-			options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-		}).AddJwtBearer(options =>
-		{
-			options.RequireHttpsMetadata = authSettings.Value.RequireHttpsMetadata; 
-			options.SaveToken = true;
+		services.AddAuthentication(opt => {
+			opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+			opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+		}).AddJwtBearer(options => {
 			options.TokenValidationParameters = new TokenValidationParameters
 			{
-				ValidateIssuerSigningKey = true,
-				IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(authSettings.Value.SecretKey)),
 				ValidateIssuer = authSettings.Value.ValidateIssuer,
 				ValidateAudience = authSettings.Value.ValidateAudience,
+				ValidateLifetime = true,
+				ValidateIssuerSigningKey = true,
+				ValidIssuer = authSettings.Value.Issuer,
+				ValidAudience = authSettings.Value.Audience,
+				IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authSettings.Value.SecretKey))
 			};
 		});
 		return services;
@@ -82,7 +78,7 @@ public static class ServiceCollectionExtension
 		return services;
 	}
 
-	public static IServiceCollection AddIdentity(this IServiceCollection services)
+	public static IServiceCollection AddIdentityInternal(this IServiceCollection services)
 	{
 		services.AddIdentity<User, IdentityRole>(config =>
 		{

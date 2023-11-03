@@ -33,7 +33,7 @@ public class AuthService : BaseService, IAuthService
 				LastName = user.LastName,
 				Token = token
 			};
-		}
+	}
 		else
 		{
 			ResponseModel.Code = HttpStatusCode.BadRequest;
@@ -83,22 +83,22 @@ public class AuthService : BaseService, IAuthService
 	#region Private
 	private string GenerateJwtToken(User user)
 	{
-		var tokenHandler = new JwtSecurityTokenHandler();
-		var key = Encoding.ASCII.GetBytes(_authSettings.SecretKey);
-
-		var tokenDescriptor = new SecurityTokenDescriptor
+		var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_authSettings.SecretKey));
+		var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
+		var authClaims = new List<Claim>()
 		{
-			Subject = new ClaimsIdentity(new[]
-			{
-				new Claim(ClaimTypes.Name, user.UserName),
-				new Claim(ClaimTypes.Email, user.Email),
-			}),
-			Expires = DateTime.UtcNow.AddSeconds(_authSettings.Expires),
-			SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+			new Claim(ClaimTypes.Name, user.UserName),
+		     new Claim(ClaimTypes.Email, user.Email)
 		};
 
-		var token = tokenHandler.CreateToken(tokenDescriptor);
-		var tokenString = tokenHandler.WriteToken(token);
+		var tokeOptions = new JwtSecurityToken(
+			issuer: _authSettings.Issuer, 
+			audience: _authSettings.Audience, 
+			claims: authClaims, 
+			expires: DateTime.Now.AddSeconds(_authSettings.Expires), 
+			signingCredentials: signinCredentials);
+
+		var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
 		return tokenString;
 	}
 
