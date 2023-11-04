@@ -1,10 +1,11 @@
 ﻿using System.Net;
 
-namespace ManageProducts.BAL.Services;
+namespace SubscriptionManagement.BAL.Services;
 
 public class SubscriptionService : BaseService, ISubscriptionService
 {
-	public SubscriptionService(IRepository repository, IMapper mapper, IHttpContextAccessor httpContextAccessor) : base(repository, mapper, httpContextAccessor)
+	public SubscriptionService(IRepository repository, IMapper mapper, IHttpContextAccessor httpContextAccessor,
+		ILogger<SubscriptionService> logger) : base(repository, mapper, httpContextAccessor, logger)
 	{
 	}
 
@@ -23,6 +24,7 @@ public class SubscriptionService : BaseService, ISubscriptionService
 		ResponseModel.Code = HttpStatusCode.OK;
 		ResponseModel.Message = Validation.SuccessMsg;
 		ResponseModel.Result = remainingDays;
+		_logger.LogInformation($"{nameof(CalculateRemainingDays)} {Validation.SuccessMsg}");
 		return ResponseModel;
 	}
 
@@ -34,6 +36,7 @@ public class SubscriptionService : BaseService, ISubscriptionService
 		  .OrResult<ResponseModel>(r => r.Errors.Any()) 
 		  .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
 
+		int i = 0;
 		var responseModel = await retryPolicy.ExecuteAsync(async () =>
 		{
 			var response = new ResponseModel();
@@ -48,12 +51,14 @@ public class SubscriptionService : BaseService, ISubscriptionService
 					Code = Validation.Subscription.NoActiveSubscriptionFoundCode,
 					Message = Validation.Subscription.NoActiveSubscriptionFoundMsg
 				});
+				_logger.LogWarning($"{nameof(GetActive)} Retry {i++}");
 				return response;
 			}
 
 			response.Code = HttpStatusCode.OK;
 			response.Message = Validation.SuccessMsg;
 			response.Result = _mapper.Map<List<SubscriptionModel>>(subscriptions);
+			_logger.LogInformation($"{nameof(GetActive)} {Validation.SuccessMsg}");
 			return response;
 		});
 
@@ -80,12 +85,14 @@ public class SubscriptionService : BaseService, ISubscriptionService
 				Code = Validation.Subscription.NoSubscriptionFoundCode,
 				Message = Validation.Subscription.NoSubscriptionFoundMsg
 			});
+			_logger.LogWarning($"{nameof(GetByUserId)} {Validation.Subscription.NoSubscriptionFoundCode}");
 			return ResponseModel;
 		}
 
 		ResponseModel.Code = HttpStatusCode.OK;
 		ResponseModel.Message = Validation.SuccessMsg;
 		ResponseModel.Result = _mapper.Map<List<SubscriptionModel>>(subscriptions);
+		_logger.LogInformation($"{nameof(GetByUserId)} {Validation.SuccessMsg}");
 		return ResponseModel;
 	}
 }

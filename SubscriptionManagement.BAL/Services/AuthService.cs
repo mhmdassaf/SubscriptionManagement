@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace ManageProducts.BAL.Services;
+namespace SubscriptionManagement.BAL.Services;
 
 public class AuthService : BaseService, IAuthService
 {
@@ -9,7 +9,8 @@ public class AuthService : BaseService, IAuthService
 
 	public AuthService(IRepository repository, IMapper mapper, IHttpContextAccessor httpContextAccessor,
 		IOptions<AuthSettings> options,
-		UserManager<User> userManager) : base(repository, mapper, httpContextAccessor)
+		UserManager<User> userManager,
+		ILogger<AuthService> logger) : base(repository, mapper, httpContextAccessor, logger)
 	{
 		_authSettings = options.Value;
 		_userManager = userManager;
@@ -26,6 +27,7 @@ public class AuthService : BaseService, IAuthService
 
 			ResponseModel.Code = HttpStatusCode.OK;
 			ResponseModel.Message = Validation.Auth.LoginSuccessMsg;
+			_logger.LogInformation($"{nameof(Login)} {Validation.Auth.LoginSuccessMsg}");
 			ResponseModel.Result = new LoginModel
 			{
 				UserName = user.UserName,
@@ -33,7 +35,7 @@ public class AuthService : BaseService, IAuthService
 				LastName = user.LastName,
 				Token = token
 			};
-	}
+	    }
 		else
 		{
 			ResponseModel.Code = HttpStatusCode.BadRequest;
@@ -42,6 +44,7 @@ public class AuthService : BaseService, IAuthService
 				Code = Validation.Auth.UserNotExistOrWrongPasswordCode,
 				Message = Validation.Auth.UserNotExistOrWrongPasswordMsg
 			});
+			_logger.LogWarning($"{nameof(Login)} {Validation.Auth.UserNotExistOrWrongPasswordCode}");
 		}
 		return ResponseModel;
 	}
@@ -59,6 +62,7 @@ public class AuthService : BaseService, IAuthService
 				Code = Validation.Auth.RegisterFailCode,
 				Message = Validation.Auth.RegisterFailMsg
 			});
+			_logger.LogWarning($"{nameof(Register)} {Validation.Auth.RegisterFailCode}");
 			return ResponseModel;
 		}
 
@@ -66,6 +70,7 @@ public class AuthService : BaseService, IAuthService
 		{
 			ResponseModel.Message = Validation.Auth.RegisterSuccessMsg;
 			ResponseModel.Code = HttpStatusCode.Created;
+			_logger.LogInformation($"{nameof(Register)} {Validation.Auth.RegisterSuccessMsg}");
 		}
 		else
 		{
@@ -75,6 +80,7 @@ public class AuthService : BaseService, IAuthService
 				Code = s.Code,
 				Message = s.Description
 			}));
+			_logger.LogWarning($"{nameof(Register)} {HttpStatusCode.InternalServerError}");
 		}
 
 		return ResponseModel;

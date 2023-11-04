@@ -18,7 +18,7 @@ try
 	builder.Services.AddMapper();
 	#endregion
 
-  var app = builder.Build();
+  var app = builder.UseNLog().Build();
 
 	#region Configure the HTTP request pipeline.
 	app.UseSwaggerInternal();

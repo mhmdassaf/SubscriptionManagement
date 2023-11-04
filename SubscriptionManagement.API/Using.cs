@@ -1,5 +1,4 @@
 ﻿global using AssafTech.GenericRepository.Extensions;
-global using ManageProducts.BAL.Services;
 global using Microsoft.AspNetCore.Authentication.JwtBearer;
 global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Diagnostics;
@@ -16,6 +15,7 @@ global using NLog.Web;
 global using SubscriptionManagement.API.Controllers.Base;
 global using SubscriptionManagement.API.Extensions;
 global using SubscriptionManagement.BAL.MappingProfiles;
+global using SubscriptionManagement.BAL.Services;
 global using SubscriptionManagement.Common.AppSettings;
 global using SubscriptionManagement.Common.Dtos.Auth;
 global using SubscriptionManagement.Common.Dtos.Subscription;
