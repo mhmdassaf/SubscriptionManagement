@@ -24,6 +24,9 @@ public class SubscriptionService : BaseService, ISubscriptionService
 		};
 
 		var remainingDays = await _repository.GetAsync(spec, s => s.EndDate.Subtract(s.StartDate).Days);
+		
+		// method-2 >> using sql functions
+		//var remainingDays = await _repository.GetFromRawSqlAsync<Subscription>($"SELECT calculate_remaining_days({dto.SubscriptionId})");
 
 		ResponseModel.Code = HttpStatusCode.OK;
 		ResponseModel.Message = Validation.SuccessMsg;
@@ -74,6 +77,9 @@ public class SubscriptionService : BaseService, ISubscriptionService
 		};
 
 		var subscriptions = await _repository.GetListAsync(spec);
+		 
+		// method-2 >> using sql functions
+		//var subscriptions = await _repository.GetFromRawSqlAsync<Subscription>($"SELECT * FROM get_subscriptions_by_user({userId})");
 
 		if (subscriptions == null || !subscriptions.Any())
 		{
