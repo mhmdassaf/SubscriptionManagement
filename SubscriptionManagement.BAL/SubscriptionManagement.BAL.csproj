@@ -10,6 +10,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.24" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
     <PackageReference Include="AssafTech.GenericRepository" Version="6.0.1" />
+    <PackageReference Include="Polly" Version="8.1.0" />
   </ItemGroup>
 
   <ItemGroup>

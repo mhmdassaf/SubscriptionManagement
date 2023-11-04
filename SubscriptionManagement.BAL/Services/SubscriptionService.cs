@@ -28,24 +28,36 @@ public class SubscriptionService : BaseService, ISubscriptionService
 
 	public async Task<ResponseModel> GetActive()
 	{
-		// kindly find the attached 'get_active_subscriptions' function on solution under 'PostgresSQL_Functions' folder
-		var subscriptions = await _repository.GetFromRawSqlAsync<Subscription>("SELECT * FROM get_active_subscriptions()");
-		
-		if(subscriptions == null || !subscriptions.Any())
-		{
-			ResponseModel.Code = HttpStatusCode.BadRequest;
-			ResponseModel.Errors.Add(new ErrorModel
-			{
-				Code = Validation.Subscription.NoActiveSubscriptionFoundCode,
-				Message = Validation.Subscription.NoActiveSubscriptionFoundMsg
-			});
-			return ResponseModel;
-		}
+		// if the response contain errors >> retry 3 times before return the result
+		var retryPolicy = Policy
+		  .Handle<Exception>()
+		  .OrResult<ResponseModel>(r => r.Errors.Any()) 
+		  .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
 
-		ResponseModel.Code = HttpStatusCode.OK;
-		ResponseModel.Message = Validation.SuccessMsg;
-		ResponseModel.Result = _mapper.Map<List<SubscriptionModel>>(subscriptions);
-		return ResponseModel;
+		var responseModel = await retryPolicy.ExecuteAsync(async () =>
+		{
+			var response = new ResponseModel();
+			// kindly find the attached 'get_active_subscriptions' function on solution under 'PostgresSQL_Functions' folder
+			var subscriptions = await _repository.GetFromRawSqlAsync<Subscription>("SELECT * FROM get_active_subscriptions()");
+
+			if (subscriptions == null || !subscriptions.Any())
+			{
+				response.Code = HttpStatusCode.BadRequest;
+				response.Errors.Add(new ErrorModel
+				{
+					Code = Validation.Subscription.NoActiveSubscriptionFoundCode,
+					Message = Validation.Subscription.NoActiveSubscriptionFoundMsg
+				});
+				return response;
+			}
+
+			response.Code = HttpStatusCode.OK;
+			response.Message = Validation.SuccessMsg;
+			response.Result = _mapper.Map<List<SubscriptionModel>>(subscriptions);
+			return response;
+		});
+
+		return responseModel;
 	}
 
 	public async Task<ResponseModel> GetByUserId(string userId)

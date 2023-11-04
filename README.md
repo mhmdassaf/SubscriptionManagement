@@ -2,6 +2,8 @@
 
 Notes: 
 1- before run the application don't forget to replace the db connnection string with your connection
-2- find the attached functions on solution under 'PostgresSQL_Functions' folder
-3- 'AssafTech.GenericRepository' is a Nuget package that used on this project is created by me. 
-   note that this package contains a lot of features not used in this project.
+2- 'PostgresSQL_Functions' folder inside the solution contains all sql functions 
+3- My Nuget package 'AssafTech.GenericRepository' is used on this project. 
+   note that this package contains a lot of features.
+4- DockerFile exist inside the solution
+5- 'Polly' nuget package used to implementing a retry mechanism on 'GetActives' API call

@@ -5,6 +5,7 @@ global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Identity;
 global using Microsoft.Extensions.Options;
 global using Microsoft.IdentityModel.Tokens;
+global using Polly;
 global using SubscriptionManagement.BAL.Services.Base;
 global using SubscriptionManagement.Common.AppSettings;
 global using SubscriptionManagement.Common.Constants;
