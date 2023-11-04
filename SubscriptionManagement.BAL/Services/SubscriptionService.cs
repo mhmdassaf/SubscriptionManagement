@@ -15,18 +15,21 @@ public class SubscriptionService : BaseService, ISubscriptionService
 
 	public async Task<ResponseModel> CalculateRemainingDays(CalculateRemainingDaysDto dto)
 	{
-		var spec = new Specification<Subscription>
-		{
-			Conditions = new List<Expression<Func<Subscription, bool>>>
-			{
-				sub => sub.Id == dto.SubscriptionId
-			}
-		};
+		#region method-1
+		//var spec = new Specification<Subscription>
+		//{
+		//	Conditions = new List<Expression<Func<Subscription, bool>>>
+		//	{
+		//		sub => sub.Id == dto.SubscriptionId
+		//	}
+		//};
+		//var remainingDays = await _repository.GetAsync(spec, s => s.EndDate.Subtract(s.StartDate).Days); 
+		#endregion
 
-		var remainingDays = await _repository.GetAsync(spec, s => s.EndDate.Subtract(s.StartDate).Days);
-		
-		// method-2 >> using sql functions
-		//var remainingDays = await _repository.GetFromRawSqlAsync<Subscription>($"SELECT calculate_remaining_days({dto.SubscriptionId})");
+		#region method-2 >> using sql functions
+		var result = await _repository.GetFromRawSqlAsync<int>($"SELECT calculate_remaining_days(@p0)", dto.SubscriptionId);
+		var remainingDays = result.FirstOrDefault(); 
+		#endregion
 
 		ResponseModel.Code = HttpStatusCode.OK;
 		ResponseModel.Message = Validation.SuccessMsg;
@@ -68,6 +71,7 @@ public class SubscriptionService : BaseService, ISubscriptionService
 
 	public async Task<ResponseModel> GetByUserId(string userId)
 	{
+		#region Method-1
 		var spec = new Specification<Subscription>
 		{
 			Conditions = new List<Expression<Func<Subscription, bool>>>
@@ -75,11 +79,12 @@ public class SubscriptionService : BaseService, ISubscriptionService
 				sub => sub.UserId == userId
 			}
 		};
-
 		var subscriptions = await _repository.GetListAsync(spec);
-		 
-		// method-2 >> using sql functions
-		//var subscriptions = await _repository.GetFromRawSqlAsync<Subscription>($"SELECT * FROM get_subscriptions_by_user({userId})");
+		#endregion
+
+		#region Method-2 >> using sql functions
+		//var subscriptions = await _repository.GetFromRawSqlAsync<Subscription>($"SELECT * FROM get_subscriptions_by_user(@p0)", userId);
+		#endregion
 
 		if (subscriptions == null || !subscriptions.Any())
 		{
