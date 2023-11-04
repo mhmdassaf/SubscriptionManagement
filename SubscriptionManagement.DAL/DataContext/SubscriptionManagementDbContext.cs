@@ -13,8 +13,9 @@ public class SubscriptionManagementDbContext : IdentityDbContext<User>
 
 	protected override void OnModelCreating(ModelBuilder builder)
 	{
-		builder.SeedSubscriptions();
 		base.OnModelCreating(builder);
+
+		builder.SeedSubscriptions();
 	}
 
 	public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
