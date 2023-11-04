@@ -1,4 +1,6 @@
-﻿namespace SubscriptionManagement.API.Extensions;
+﻿using SubscriptionManagement.BAL.Providers;
+
+namespace SubscriptionManagement.API.Extensions;
 
 public static class ServiceCollectionExtension
 {
@@ -7,6 +9,12 @@ public static class ServiceCollectionExtension
 		services.Configure<AuthSettings>(configuration.GetSection(nameof(AuthSettings)));
 		services.AddScoped<IAuthService, AuthService>();
 		services.AddScoped<ISubscriptionService, SubscriptionService>();
+		return services;
+	}
+
+	public static IServiceCollection AddRetryProviders(this IServiceCollection services)
+	{
+		services.AddSingleton<RetryPolicyProvider>();
 		return services;
 	}
 

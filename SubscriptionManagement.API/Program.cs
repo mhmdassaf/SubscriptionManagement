@@ -16,6 +16,7 @@ try
 	builder.Services.AddEndpointsApiExplorer();
 	builder.Services.AddSwagger();
 	builder.Services.AddMapper();
+	builder.Services.AddRetryProviders();
 	#endregion
 
   var app = builder.UseNLog().Build();

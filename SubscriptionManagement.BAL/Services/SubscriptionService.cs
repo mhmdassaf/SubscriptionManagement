@@ -4,9 +4,13 @@ namespace SubscriptionManagement.BAL.Services;
 
 public class SubscriptionService : BaseService, ISubscriptionService
 {
+	private readonly AsyncRetryPolicy<ResponseModel> _retryPolicy;
+
 	public SubscriptionService(IRepository repository, IMapper mapper, IHttpContextAccessor httpContextAccessor,
-		ILogger<SubscriptionService> logger) : base(repository, mapper, httpContextAccessor, logger)
+		ILogger<SubscriptionService> logger,
+		RetryPolicyProvider retryPolicyProvider) : base(repository, mapper, httpContextAccessor, logger)
 	{
+		_retryPolicy = retryPolicyProvider.CreateRetryPolicy();
 	}
 
 	public async Task<ResponseModel> CalculateRemainingDays(CalculateRemainingDaysDto dto)
@@ -30,14 +34,8 @@ public class SubscriptionService : BaseService, ISubscriptionService
 
 	public async Task<ResponseModel> GetActive()
 	{
-		// if the response contain errors >> retry 3 times before return the result
-		var retryPolicy = Policy
-		  .Handle<Exception>()
-		  .OrResult<ResponseModel>(r => r.Errors.Any()) 
-		  .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
-
 		int i = 0;
-		var responseModel = await retryPolicy.ExecuteAsync(async () =>
+		var responseModel = await _retryPolicy.ExecuteAsync(async () =>
 		{
 			var response = new ResponseModel();
 			// kindly find the attached 'get_active_subscriptions' function on solution under 'PostgresSQL_Functions' folder

@@ -25,7 +25,7 @@ public class SubscriptionController : BaseController
 
 	/// <summary>
 	/// Get all active subscription, 
-	/// if no subscription are found retry 3 times before return the response
+	/// if no subscription are found retry 2 times before return the response
 	/// </summary>
 	/// <returns>list of Subscription</returns>
 	[HttpGet]
