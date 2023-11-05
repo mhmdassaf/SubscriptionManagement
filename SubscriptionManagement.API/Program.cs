@@ -13,13 +13,14 @@ try
 	builder.Services.AddIdentityInternal();
 	builder.Services.AddAuth();
 	builder.Services.AddHttpContextAccessor();
+	builder.Services.AddAPIVersioning();
 	builder.Services.AddEndpointsApiExplorer();
 	builder.Services.AddSwagger();
 	builder.Services.AddMapper();
 	builder.Services.AddRetryProviders();
 	#endregion
 
-  var app = builder.UseNLog().Build();
+	var app = builder.UseNLog().Build();
 
 	#region Configure the HTTP request pipeline.
 	app.UseSwaggerInternal();

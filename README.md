@@ -14,3 +14,4 @@ Get Started:
 7- 'AutoMapper' Nuget package used to make mapping between models, dtos..
 8- 'Microsoft.AspNetCore.Identity' used for managing user authentication, authorization, and identity-related functionality.
 9- "NLog" used as the logging framework
+10- 'Asp.Versioning.Mvc' Nuget package used to do API versioning

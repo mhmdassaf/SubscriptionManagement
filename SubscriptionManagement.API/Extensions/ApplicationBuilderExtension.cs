@@ -6,9 +6,16 @@ public static class ApplicationBuilderExtension
 	{
 		if (app.Environment.IsDevelopment())
 		{
+			var apiVersionDescriptionProvider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
+
 			app.UseSwagger();
-			app.UseSwaggerUI(options => {
-				options.SwaggerEndpoint("/swagger/V1/swagger.json", "SubscriptionManagement API V1");
+			app.UseSwaggerUI(options =>
+			{
+				foreach (var description in apiVersionDescriptionProvider.ApiVersionDescriptions.Reverse())
+				{
+					options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json",
+						description.GroupName.ToUpperInvariant());
+				}
 			});
 		}
 		return app;

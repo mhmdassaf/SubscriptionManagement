@@ -1,12 +1,11 @@
-﻿using SubscriptionManagement.BAL.Providers;
-
-namespace SubscriptionManagement.API.Extensions;
+﻿namespace SubscriptionManagement.API.Extensions;
 
 public static class ServiceCollectionExtension
 {
 	public static IServiceCollection AddApplicationServices(this IServiceCollection services, ConfigurationManager configuration)
 	{
 		services.Configure<AuthSettings>(configuration.GetSection(nameof(AuthSettings)));
+		services.ConfigureOptions<ConfigureSwaggerOptions>();
 		services.AddScoped<IAuthService, AuthService>();
 		services.AddScoped<ISubscriptionService, SubscriptionService>();
 		return services;
@@ -43,7 +42,7 @@ public static class ServiceCollectionExtension
 						Type = ReferenceType.SecurityScheme
 					}
 				},
-				new List < string > ()
+				new List <string>()
 		    }});
 		});
 		return services;
@@ -108,6 +107,25 @@ public static class ServiceCollectionExtension
 		{
 			config.AddProfile<MappingProfile>();
 		});
+		return services;
+	}
+
+	public static IServiceCollection AddAPIVersioning(this IServiceCollection services)
+	{
+		services.AddApiVersioning(opt =>
+		{
+			opt.DefaultApiVersion = new ApiVersion(1, 0);
+			opt.AssumeDefaultVersionWhenUnspecified = true;
+			opt.ReportApiVersions = true;
+			opt.ApiVersionReader = ApiVersionReader.Combine(new UrlSegmentApiVersionReader(),
+															new HeaderApiVersionReader("x-api-version"),
+															new MediaTypeApiVersionReader("x-api-version"));
+		}).AddApiExplorer(setup =>
+		{
+			setup.GroupNameFormat = "'v'VVV";
+			setup.SubstituteApiVersionInUrl = true;
+		});
+
 		return services;
 	}
 }
