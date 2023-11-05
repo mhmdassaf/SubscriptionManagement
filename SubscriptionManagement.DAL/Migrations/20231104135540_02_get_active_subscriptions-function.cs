@@ -12,22 +12,22 @@ namespace SubscriptionManagement.DAL.Migrations
 	            Id uuid,
 	            UserId text,
 	            SubscriptionType text,
-	            StartDate date,
-	            EndDate date
+	            StartDate timestamp with time zone,
+	            EndDate timestamp with time zone
             ) AS $$
             BEGIN
                 RETURN QUERY
                 SELECT
-                    Id,
-		            UserId,
-		            SubscriptionType,
-		            StartDate,
-		            EndDate
+                    s.""Id"",
+		            s.""UserId"",
+		            s.""SubscriptionType"",
+		            s.""StartDate"",
+		            s.""EndDate""
                 FROM
-                    public.""Subscriptions""
+                    public.""Subscriptions"" s
                 WHERE
-                    StartDate <= current_date
-                    AND EndDate >= current_date;
+                    s.""StartDate"" <= current_date
+                    AND s.""EndDate"" >= current_date;
             END;
             $$ LANGUAGE plpgsql;");
 		}

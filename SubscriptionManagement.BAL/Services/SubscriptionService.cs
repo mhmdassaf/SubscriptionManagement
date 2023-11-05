@@ -15,36 +15,40 @@ public class SubscriptionService : BaseService, ISubscriptionService
 
 	public async Task<ResponseModel> CalculateRemainingDays(CalculateRemainingDaysDto dto)
 	{
-		#region method-1
-		//var spec = new Specification<Subscription>
-		//{
-		//	Conditions = new List<Expression<Func<Subscription, bool>>>
-		//	{
-		//		sub => sub.Id == dto.SubscriptionId
-		//	}
-		//};
-		//var remainingDays = await _repository.GetAsync(spec, s => s.EndDate.Subtract(s.StartDate).Days); 
-		#endregion
+		var responseModel = await _retryPolicy.ExecuteAsync(async () =>
+		{
+			var response = new ResponseModel();
 
-		#region method-2 >> using sql functions
-		var result = await _repository.GetFromRawSqlAsync<int>($"SELECT calculate_remaining_days(@p0)", dto.SubscriptionId);
-		var remainingDays = result.FirstOrDefault(); 
-		#endregion
+			#region method-1
+			//var spec = new Specification<Subscription>
+			//{
+			//	Conditions = new List<Expression<Func<Subscription, bool>>>
+			//	{
+			//		sub => sub.Id == dto.SubscriptionId
+			//	}
+			//};
+			//var remainingDays = await _repository.GetAsync(spec, s => s.EndDate.Subtract(s.StartDate).Days); 
+			#endregion
 
-		ResponseModel.Code = HttpStatusCode.OK;
-		ResponseModel.Message = Validation.SuccessMsg;
-		ResponseModel.Result = remainingDays;
-		_logger.LogInformation($"{nameof(CalculateRemainingDays)} {Validation.SuccessMsg}");
-		return ResponseModel;
+			#region method-2 >> using sql functions
+			var result = await _repository.GetFromRawSqlAsync<int>($"SELECT calculate_remaining_days(@p0)", dto.SubscriptionId);
+			var remainingDays = result.FirstOrDefault();
+			#endregion
+
+			response.Code = HttpStatusCode.OK;
+			response.Message = Validation.SuccessMsg;
+			response.Result = remainingDays;
+			_logger.LogInformation($"{nameof(CalculateRemainingDays)} {Validation.SuccessMsg}");
+			return response;
+		});
+		return responseModel;
 	}
 
 	public async Task<ResponseModel> GetActive()
 	{
-		int i = 0;
 		var responseModel = await _retryPolicy.ExecuteAsync(async () =>
 		{
 			var response = new ResponseModel();
-			// kindly find the attached 'get_active_subscriptions' function on solution under 'PostgresSQL_Functions' folder
 			var subscriptions = await _repository.GetFromRawSqlAsync<Subscription>("SELECT * FROM get_active_subscriptions()");
 
 			if (subscriptions == null || !subscriptions.Any())
@@ -55,7 +59,7 @@ public class SubscriptionService : BaseService, ISubscriptionService
 					Code = Validation.Subscription.NoActiveSubscriptionFoundCode,
 					Message = Validation.Subscription.NoActiveSubscriptionFoundMsg
 				});
-				_logger.LogWarning($"{nameof(GetActive)} Retry {i++}");
+				_logger.LogWarning($"{nameof(GetActive)} {Validation.Subscription.NoActiveSubscriptionFoundCode}");
 				return response;
 			}
 
@@ -65,44 +69,49 @@ public class SubscriptionService : BaseService, ISubscriptionService
 			_logger.LogInformation($"{nameof(GetActive)} {Validation.SuccessMsg}");
 			return response;
 		});
-
 		return responseModel;
 	}
 
 	public async Task<ResponseModel> GetByUserId(string userId)
 	{
-		#region Method-1
-		var spec = new Specification<Subscription>
+		var responseModel = await _retryPolicy.ExecuteAsync(async () =>
 		{
-			Conditions = new List<Expression<Func<Subscription, bool>>>
+			var response = new ResponseModel();
+
+			#region Method-1
+			var spec = new Specification<Subscription>
+			{
+				Conditions = new List<Expression<Func<Subscription, bool>>>
 			{
 				sub => sub.UserId == userId
 			}
-		};
-		var subscriptions = await _repository.GetListAsync(spec);
-		#endregion
+			};
+			var subscriptions = await _repository.GetListAsync(spec);
+			#endregion
 
-		#region Method-2 >> using sql functions
-		//var subscriptions = await _repository.GetFromRawSqlAsync<Subscription>($"SELECT * FROM get_subscriptions_by_user(@p0)", userId);
-		#endregion
+			#region Method-2 >> using sql functions
+			//var subscriptions = await _repository.GetFromRawSqlAsync<Subscription>($"SELECT * FROM get_subscriptions_by_user(@p0)", userId);
+			#endregion
 
-		if (subscriptions == null || !subscriptions.Any())
-		{
-			ResponseModel.Code = HttpStatusCode.BadRequest;
-			ResponseModel.Errors.Add(new ErrorModel
+			if (subscriptions == null || !subscriptions.Any())
 			{
-				Code = Validation.Subscription.NoSubscriptionFoundCode,
-				Message = Validation.Subscription.NoSubscriptionFoundMsg
-			});
-			_logger.LogWarning($"{nameof(GetByUserId)} {Validation.Subscription.NoSubscriptionFoundCode}");
-			return ResponseModel;
-		}
+				response.Code = HttpStatusCode.BadRequest;
+				response.Errors.Add(new ErrorModel
+				{
+					Code = Validation.Subscription.NoSubscriptionFoundCode,
+					Message = Validation.Subscription.NoSubscriptionFoundMsg
+				});
+				_logger.LogWarning($"{nameof(GetByUserId)} {Validation.Subscription.NoSubscriptionFoundCode}");
+				return response;
+			}
 
-		ResponseModel.Code = HttpStatusCode.OK;
-		ResponseModel.Message = Validation.SuccessMsg;
-		ResponseModel.Result = _mapper.Map<List<SubscriptionModel>>(subscriptions);
-		_logger.LogInformation($"{nameof(GetByUserId)} {Validation.SuccessMsg}");
-		return ResponseModel;
+			response.Code = HttpStatusCode.OK;
+			response.Message = Validation.SuccessMsg;
+			response.Result = _mapper.Map<List<SubscriptionModel>>(subscriptions);
+			_logger.LogInformation($"{nameof(GetByUserId)} {Validation.SuccessMsg}");
+			return response;
+		});
+		return responseModel;
 	}
 }
 
