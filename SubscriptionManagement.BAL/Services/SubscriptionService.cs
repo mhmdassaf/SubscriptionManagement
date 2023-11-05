@@ -44,7 +44,7 @@ public class SubscriptionService : BaseService, ISubscriptionService
 		return responseModel;
 	}
 
-	public async Task<ResponseModel> GetActive()
+	public async Task<ResponseModel> GetActives()
 	{
 		var responseModel = await _retryPolicy.ExecuteAsync(async () =>
 		{
@@ -59,14 +59,14 @@ public class SubscriptionService : BaseService, ISubscriptionService
 					Code = Validation.Subscription.NoActiveSubscriptionFoundCode,
 					Message = Validation.Subscription.NoActiveSubscriptionFoundMsg
 				});
-				_logger.LogWarning($"{nameof(GetActive)} {Validation.Subscription.NoActiveSubscriptionFoundCode}");
+				_logger.LogWarning($"{nameof(GetActives)} {Validation.Subscription.NoActiveSubscriptionFoundCode}");
 				return response;
 			}
 
 			response.Code = HttpStatusCode.OK;
 			response.Message = Validation.SuccessMsg;
 			response.Result = _mapper.Map<List<SubscriptionModel>>(subscriptions);
-			_logger.LogInformation($"{nameof(GetActive)} {Validation.SuccessMsg}");
+			_logger.LogInformation($"{nameof(GetActives)} {Validation.SuccessMsg}");
 			return response;
 		});
 		return responseModel;
@@ -118,6 +118,6 @@ public class SubscriptionService : BaseService, ISubscriptionService
 public interface ISubscriptionService
 {
 	Task<ResponseModel> CalculateRemainingDays(CalculateRemainingDaysDto dto);
-	Task<ResponseModel> GetActive();
+	Task<ResponseModel> GetActives();
 	Task<ResponseModel> GetByUserId(string userId);
 }

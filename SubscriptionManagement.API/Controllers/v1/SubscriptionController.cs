@@ -26,13 +26,12 @@ public class SubscriptionController : BaseController
 
     /// <summary>
     /// Get all active subscription, 
-    /// if no subscription are found retry 2 times before return the response
     /// </summary>
-    /// <returns>list of Subscription</returns>
+    /// <returns>list of active subscriptions</returns>
     [HttpGet]
-    public async Task<IActionResult> GetActive()
+    public async Task<IActionResult> GetActives()
     {
-        var response = await _subscriptionService.GetActive();
+        var response = await _subscriptionService.GetActives();
         return StatusCode((int)response.Code, response);
     }
 

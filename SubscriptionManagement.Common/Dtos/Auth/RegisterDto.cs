@@ -2,10 +2,10 @@
 
 public class RegisterDto
 {
-	[MaxLength(10)]
+	[MinLength(3), MaxLength(10)]
 	public string? FirstName { get; set; }
 
-	[MaxLength(10)]
+	[[MinLength(3), MaxLength(10)]
 	public string? LastName { get; set; }
 
 	[Required, EmailAddress]
